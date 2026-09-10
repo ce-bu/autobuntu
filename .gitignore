@@ -1,0 +1,13 @@
+# Build artifacts and downloads
+cache/
+work/
+out/
+
+# Local settings - contains TARGET_PASSWORD in clear text
+config.env
+
+# Stray downloads / temporary files
+*.iso
+*.part
+*.vsix
+SHA256SUMS*

@@ -1,0 +1,6 @@
+# VS Code extensions, downloaded as .vsix at build time and installed offline.
+# Format: <publisher>.<extension-name>, one per line.
+rust-lang.rust-analyzer
+vadimcn.vscode-lldb
+tamasfe.even-better-toml
+drzix.hc-zenburn-vscode
