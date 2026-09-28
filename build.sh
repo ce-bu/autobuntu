@@ -1097,7 +1097,44 @@ cmd_test() {
   qemu-system-x86_64 "${qemu_args[@]}"
 
   info "To boot the installed disk afterwards:"
-  info "  qemu-system-x86_64 -machine q35,accel=${accel} -m ${QEMU_MEMORY} -drive file=${disk},if=virtio"
+  info "  $0 boot"
+}
+
+cmd_boot() {
+  require_cmd qemu-system-x86_64
+
+  local test_dir="${OUT_DIR}/qemu"
+  local disk="${test_dir}/target.qcow2"
+  [[ -f ${disk} ]] || die "test disk not found - run: $0 test"
+
+  local accel=tcg
+  [[ -w /dev/kvm ]] && accel=kvm || warn "/dev/kvm not usable - emulating (slow)"
+
+  local -a qemu_args=(
+    -machine "q35,accel=${accel}"
+    -smp "${QEMU_CPUS}"
+    -m "${QEMU_MEMORY}"
+    -vga virtio
+    -device virtio-net-pci,netdev=n0
+    -netdev user,id=n0,restrict=on
+    -drive "file=${disk},format=qcow2,if=virtio"
+    -serial "file:${test_dir}/serial.log"
+  )
+  [[ ${accel} == kvm ]] && qemu_args+=(-cpu host)
+
+  if find_ovmf; then
+    local vars="${test_dir}/OVMF_VARS.fd"
+    [[ -f ${vars} ]] || die "UEFI variables not found - run: $0 test"
+    qemu_args+=(
+      -drive "if=pflash,format=raw,unit=0,readonly=on,file=${OVMF_CODE}"
+      -drive "if=pflash,format=raw,unit=1,file=${vars}"
+    )
+    info "UEFI firmware: ${OVMF_CODE}"
+  fi
+
+  log "Starting installed QEMU system (network restricted)"
+  info "guest console log: ${test_dir}/serial.log"
+  qemu-system-x86_64 "${qemu_args[@]}"
 }
 
 # --------------------------------------------------------------------------
@@ -1147,6 +1184,7 @@ main() {
     build|all) cmd_build ;;
     usb)       cmd_usb "$@" ;;
     test)      cmd_test ;;
+    boot)      cmd_boot ;;
     clean)     cmd_clean ;;
     -h|--help|help) usage ;;
     *) usage; die "unknown command: ${cmd}" ;;

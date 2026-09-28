@@ -12,8 +12,10 @@ Builds a bootable USB that installs a fully customized Ubuntu on a new PC
 $EDITOR config.env            # 2. user, password, disks, options
 $EDITOR packages.list         # 3. packages you want on the target PC
 ./build.sh build              # 4. download + assemble  (long, ~10 GB)
-./build.sh test               # 5. optional: try the install in QEMU
-./build.sh usb /dev/sdX       # 6. write the stick (asks to confirm)
+./build.sh iso                # 5. create the ISO
+./build.sh test               # 6. optional: try the install in QEMU
+./build.sh boot               # 7. boot the system installed by the last QEMU test
+./build.sh usb /dev/sdX       # 8. write the stick (asks to confirm)
 ```
 
 Then plug the stick into the new PC, boot from it, and walk away. The install is
@@ -39,6 +41,7 @@ Re-run only what changed: `./build.sh packages && ./build.sh iso` after editing
 | `build` | `download` + `packages` + `iso`. The default. |
 | `usb /dev/sdX` | Write the ISO to a USB stick. |
 | `test` | Boot the ISO in QEMU with networking blocked. |
+| `boot` | Boot the system installed by the last QEMU test. |
 | `clean` | Remove `work/` and `out/`; `cache/` is kept. |
 
 Add `--skip-checksum` to any command to skip SHA256 verification of downloads.
